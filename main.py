@@ -4,7 +4,9 @@ from datetime import datetime
 import dotenv, os
 
 dotenv.load_dotenv()
-app = FastAPI(debug=True)
+app = FastAPI(
+    debug=True
+    )
 
 @app.get('/')
 def root():
