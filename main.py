@@ -1,17 +1,25 @@
 from fastapi import FastAPI, HTTPException
-from firebase_admin import credentials, initialize_app, firestore
+from api import OpenSanctionsAPI
 from datetime import datetime
 import dotenv, os
 
 dotenv.load_dotenv()
+
 app = FastAPI(
     debug=True
     )
+
+OsAPI = OpenSanctionsAPI()
 
 @app.get('/')
 def root():
     return {200 : 'Sucesso'}
 
-@app.get('/api/teste')
-def searchOpenSanctiopns():
-    return {}
+@app.get('/api/consultaSancoes')
+def searchOpenSanctiopns(schema:str, query:str):
+    assert schema in ['Thing', 'Person', 'Company']
+    assert query is not None
+
+    response = OsAPI.request_match_info(schema=schema, query=query)
+
+    return response
