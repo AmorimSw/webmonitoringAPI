@@ -1,22 +1,35 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Security, status
+from fastapi.security.api_key import APIKeyHeader
 from api import OpenSanctionsAPI
 from datetime import datetime
 import dotenv, os
 
 dotenv.load_dotenv()
+OsAPI = OpenSanctionsAPI()
 
 app = FastAPI(
     debug=True
     )
 
-OsAPI = OpenSanctionsAPI()
+API_KEY_NAME = 'x-api-key'
+api_key_header = APIKeyHeader(name=API_KEY_NAME)
+
+async def checkApiKey(apiKey: str = Security(api_key_header)):
+    correctApiKey = os.environ['INTERNAL_API_KEY']
+    if apiKey == correctApiKey:
+        return apiKey
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Acesso negado: Api key inválida ou ausente."
+    )
+
 
 @app.get('/')
 def root():
     return {200 : 'Sucesso'}
 
 @app.get('/api/consultaSancoes')
-def searchOpenSanctiopns(schema:str, query:str):
+def searchOpenSanctiopns(schema:str, query:str, apikey:str=Security(checkApiKey)):
     assert schema in ['Thing', 'Person', 'Company']
     assert query is not None
 

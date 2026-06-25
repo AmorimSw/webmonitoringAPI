@@ -1,5 +1,6 @@
 import requests, os
 from typing import Literal
+from dataFilters.filterMatchInfos import visualizeMatchInfo, _checkSanction
 
 class OpenSanctionsAPI:
 
@@ -26,4 +27,7 @@ class OpenSanctionsAPI:
         response = self.session.post(f'{self.BASE_URL}/match/default', json=query_schema)
         response.raise_for_status()
 
-        return response.json()
+        filtered_response = visualizeMatchInfo(response.json())
+
+
+        return filtered_response
