@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException, Security, status
 from fastapi.security.api_key import APIKeyHeader
-from api import OpenSanctionsAPI
+from api import OpenSanctionsAPI, BacenSanctionsAPI
 from datetime import datetime
 import dotenv, os
 
 dotenv.load_dotenv()
 OsAPI = OpenSanctionsAPI()
+BacenAPI = BacenSanctionsAPI()
 
 app = FastAPI(
     debug=True
@@ -54,3 +55,14 @@ def searchSanctionsV2(schema:str, query:str, apikey:str=Security(checkApiKey)):
     response = OsAPI.requestMatchInfoV2(schema=schema, query=query)
 
     return response
+
+@app.get('/api/consultaSancoesBacen')
+def searchBacenSanctions(cnpj, apikey:str=Security(checkApiKey)):
+    """
+    """
+
+    response = BacenAPI.requestBacenSanction(cnpj)
+
+    return response
+
+
