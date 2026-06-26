@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Security, status
 from fastapi.security.api_key import APIKeyHeader
 from api import OpenSanctionsAPI, BacenSanctionsAPI
+from typing import Literal
 from datetime import datetime
 import dotenv, os
 
@@ -25,12 +26,12 @@ async def checkApiKey(apiKey: str = Security(api_key_header)):
     )
 
 
-@app.get('/')
-def root():
-    return {200 : 'Sucesso'}
+# @app.get('/')
+# def root():
+#     return {200 : 'Sucesso'}
 
 @app.get('/api/consultaSancoes/v1')
-def searchSanctions(schema:str, query:str, apikey:str=Security(checkApiKey)):
+def searchSanctions(query:str, schema:Literal['Thing', 'Person', 'Company'], apikey:str=Security(checkApiKey)):
     """Parameters:
     * Schema: *Thing*, *Person*, *Company*
     O schema definirá será a pesquisa será sobre pessoas ou empresas. Mantendo como *Thing*,
@@ -43,7 +44,7 @@ def searchSanctions(schema:str, query:str, apikey:str=Security(checkApiKey)):
     return response
 
 @app.get('/api/consultaSancoes/v2')
-def searchSanctionsV2(schema:str, query:str, apikey:str=Security(checkApiKey)):
+def searchSanctionsV2(query:str, schema:Literal['Thing', 'Person', 'Company'], apikey:str=Security(checkApiKey)):
     """Parameters:
     * Schema: *Thing*, *Person*, *Company*
     O schema definirá será a pesquisa será sobre pessoas ou empresas. Mantendo como *Thing*,
