@@ -1,6 +1,6 @@
 import requests, os
 from typing import Literal
-from dataFilters.filterMatchInfos import visualizeMatchInfo, _checkSanction
+from dataFilters.filterMatchInfos import visualizeMatchInfo, visualizeMatchInfoV2, _checkSanction
 
 class OpenSanctionsAPI:
 
@@ -11,7 +11,7 @@ class OpenSanctionsAPI:
         self.session = requests.Session()
         self.session.headers['Authorization'] = f'ApiKey {self.API_KEY}'
 
-    def request_match_info(self, query:str, schema:Literal['Person', 'Company', 'Thing']='Thing'):
+    def requestMatchInfo(self, query:str, schema:Literal['Person', 'Company', 'Thing']='Thing'):
 
         query_schema = {
             'queries' : {
@@ -28,6 +28,27 @@ class OpenSanctionsAPI:
         response.raise_for_status()
 
         filtered_response = visualizeMatchInfo(response.json())
+
+
+        return filtered_response
+
+    def requestMatchInfoV2(self, query:str, schema:Literal['Person', 'Company', 'Thing']='Thing'):
+
+        query_schema = {
+            'queries' : {
+                'query' : {
+                    'schema' : schema,
+                    'properties' : {
+                       'name' : [query]
+                    }
+                }
+            }
+        }
+
+        response = self.session.post(f'{self.BASE_URL}/match/default', json=query_schema)
+        response.raise_for_status()
+
+        filtered_response = visualizeMatchInfoV2(response.json())
 
 
         return filtered_response
