@@ -54,7 +54,7 @@ def companyDataTreatment(rawData:dict) -> dict:
     finalData['enderecos'] = respData['enderecos']
     
     # Emails relacionados a ela
-    finalData['emails'] = respData.get('dadosCadastrais', {})
+    finalData['emails'] = respData.get('emails', {})
 
     # Histórico profissional
     finalData['socios'] = respData.get('socios', {})
