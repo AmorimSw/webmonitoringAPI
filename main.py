@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Security, status
 from fastapi.security.api_key import APIKeyHeader
-from api import OpenSanctionsAPI, BacenSanctionsAPI
+from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request
 from typing import Literal
 from datetime import datetime
 import dotenv, os
@@ -24,11 +24,6 @@ async def checkApiKey(apiKey: str = Security(api_key_header)):
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Acesso negado: Api key inválida ou ausente."
     )
-
-
-# @app.get('/')
-# def root():
-#     return {200 : 'Sucesso'}
 
 @app.get('/api/consultaSancoes/v1')
 def searchSanctions(query:str, schema:Literal['Thing', 'Person', 'Company'], apikey:str=Security(checkApiKey)):
@@ -64,6 +59,18 @@ def searchBacenSanctions(cnpj, apikey:str=Security(checkApiKey)):
 
     response = BacenAPI.requestBacenSanction(cnpj)
 
+    return response
+
+@app.get('/api/consultaPessoaAssertiva')
+def searchPersonInfosAssertiva(document, apikey:str=Security(checkApiKey)):
+    """Realiza a consulta de uma pessoa física na base de dados do Assertiva."""
+    response = cpf_request(document)
+    return response
+
+@app.get('/api/consultaEmpresaAssertiva')
+def searchCompanyInfosAssertiva(document, apikey:str=Security(checkApiKey)):
+    """Realiza a consulta de uma jurídica na base de dados do Assertiva."""
+    response = cnpj_request(document)
     return response
 
 

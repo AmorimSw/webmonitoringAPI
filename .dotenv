@@ -1,1 +1,5 @@
-FIREBASE_CON = "" //// Privatekey firebase
+INTERNAL_API_KEY = ""
+
+OPEN_SANCTIONS_BASE_URL = ""
+OPEN_SANCTIONS_KEY = ""
+ASSERTIVA_API_KEY = "/"
