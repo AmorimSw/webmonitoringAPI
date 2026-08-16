@@ -21,7 +21,7 @@ def personDataTreatment(rawData:dict) -> dict:
     finalData['enderecos'] = respData['enderecos']
     
     # Emails relacionados a ela
-    finalData['emails'] = respData.get('dadosCadastrais', {})
+    finalData['emails'] = respData.get('emails', {})
 
     # Histórico profissional
     finalData['possivelHistoricoProfissional'] = respData.get('possivelHistoricoProfissional', {})
