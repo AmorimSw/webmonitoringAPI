@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Security, status
 from fastapi.security.api_key import APIKeyHeader
 from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request
+from api.sci2Api import requestInquiriesInfos
 from typing import Literal
-from datetime import datetime
+from datetime import datetime, date
 import dotenv, os
 
 dotenv.load_dotenv()
@@ -74,3 +75,10 @@ def searchCompanyInfosAssertiva(document, apikey:str=Security(checkApiKey)):
     return response
 
 
+@app.get('/api/sci2/reqSindicancia')
+def requestInquiries(startDate:date, endDate:date, apikey:str=Security(checkApiKey)):
+    """Consulta base de sindicâncias com base em um período de datas.
+    As datas devem ser enviadas em formato de yyyy-mm-dd."""
+
+    response = requestInquiriesInfos(startDate, endDate)
+    return response
