@@ -84,4 +84,49 @@ def related_people_request(documento:str=None):
 
     return response.json()
 
-    
+# =================================
+# Consulta Veículos e Proprietários
+# =================================
+
+def _vehicleProtocolRequest(placa) -> str:
+    barear_token = _generate_token()
+
+    url = 'https://api.assertivasolucoes.com.br/veiculos/v3/consulta-base'
+
+    headers = {
+        'Authorization' : barear_token
+    }
+
+    params = {
+        'idFinalidade' : 2,
+        'documento' : placa,
+        'tipo' : 'placa'
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    resp_json = response.json()
+
+    protocolo = resp_json.get('cabecalho', {}).get('protocolo', '')
+    return protocolo
+
+def vehicleDataRequest(placa) -> dict:
+    barear_token = _generate_token()
+
+    protocolo = _vehicleProtocolRequest(placa)
+
+    url = 'https://api.assertivasolucoes.com.br/veiculos/v3/demais-consultas'
+
+    headers = {
+        'Authorization' : barear_token
+    }
+
+    params = {
+        'idFinalidade' : 2,
+        'consulta' : 'binestadual',
+        'documento' : placa,
+        'tipo' : 'placa',
+        'protocolo' : protocolo
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    return response.json()

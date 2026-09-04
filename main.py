@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Security, status
 from fastapi.security.api_key import APIKeyHeader
-from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request
+from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request, vehicleDataRequest
 from api.sci2Api import requestInquiriesInfos
 from typing import Literal
 from datetime import datetime, date
@@ -22,7 +22,7 @@ async def checkApiKey(apiKey: str = Security(api_key_header)):
     if apiKey == correctApiKey:
         return apiKey
     raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
+        status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Acesso negado: Api key inválida ou ausente."
     )
 
@@ -72,6 +72,12 @@ def searchPersonInfosAssertiva(document, apikey:str=Security(checkApiKey)):
 def searchCompanyInfosAssertiva(document, apikey:str=Security(checkApiKey)):
     """Realiza a consulta de uma jurídica na base de dados do Assertiva."""
     response = cnpj_request(document)
+    return response
+
+@app.get('/api/consultaVeiculoAssertiva')
+def searchVehicleInfosAssertiva(vehiclePlate, apikey:str=Security(checkApiKey)):
+    """Realiza a consulta de veículos e proprietário com base no emplacamento."""
+    response = vehicleDataRequest(vehiclePlate)
     return response
 
 
