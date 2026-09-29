@@ -101,7 +101,7 @@ def searchVehicleInfosAssertiva(vehiclePlate, apikey:str=Security(checkApiKey)):
 @app.get('/api/propietarioVeiculo')
 def searchVehicleHistoryInfosAssertiva(document: str, apikey:str=Security(checkApiKey)):
     """Realiza a consulta do histórico de veículos na base de dados do Assertiva."""
-    response = vehicle_history_request(documento)
+    response = vehicle_history_request(document)
     return response
 
 
