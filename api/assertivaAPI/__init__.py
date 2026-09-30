@@ -1,5 +1,6 @@
 import requests
-from .utils.dataTreatment import personDataTreatment, companyDataTreatment
+from typing import Literal
+from .utils.dataTreatment import personDataTreatment, companyDataTreatment, emailDataTreatment, phoneDataTreatment, nameAddressDataTreatment, vehicleHistoryDataTreatment
 
 def _generate_token():
 
@@ -32,7 +33,8 @@ def cpf_request(cpf:str):
     }
 
     response = requests.request("GET", url, headers=headers, data=payload)
-    response.raise_for_status()
+    if response.status_code != 200:
+        return response.json()
 
     personData = personDataTreatment(response.json())
 
@@ -54,6 +56,104 @@ def cnpj_request(cnpj:str) -> dict:
 
     companyData = companyDataTreatment(response.json())
     return companyData
+
+# =========================
+# Consultas E-mail
+# =========================
+
+def email_request(email:str):
+    import urllib.parse
+    barear_token = _generate_token()
+    
+    email_encoded = urllib.parse.quote(email)
+
+    url = f"https://api.assertivasolucoes.com.br/localize/v3/email/?email={email_encoded}&idFinalidade=1"
+
+    payload = {}
+    headers = {
+    'authorization': barear_token,
+    'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    response.raise_for_status()
+
+    emailData = emailDataTreatment(response.json())
+
+    return emailData
+
+# =========================
+# Consultas Telefone
+# =========================
+
+def phone_request(telefone:str):
+    import urllib.parse
+    barear_token = _generate_token()
+    
+    telefone_encoded = urllib.parse.quote(telefone)
+
+    url = f"https://api.assertivasolucoes.com.br/localize/v3/telefone/?telefone={telefone_encoded}&idFinalidade=1"
+
+    payload = {}
+    headers = {
+    'authorization': barear_token,
+    'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    response.raise_for_status()
+
+    phoneData = phoneDataTreatment(response.json())
+
+    return phoneData
+
+# =========================
+# Consultas Nome ou Endereço
+# =========================
+
+def name_address_request(nomeOuRazaoSocial:str, buscarPor:Literal['ambas', 'pessoas', 'empresas']='ambas', cepOuNomeRua:str=None, bairro:str=None, cidade:str=None, uf:str=None, nomeOuRazaoSocialExata:bool=False):
+    import urllib.parse
+    barear_token = _generate_token()
+    
+    nome_encoded = urllib.parse.quote(nomeOuRazaoSocial)
+
+    url = f"https://api.assertivasolucoes.com.br/localize/v3/nome-endereco/"
+
+    payload = {}
+    headers = {
+    'authorization': barear_token,
+    'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    params = {
+        'buscarPor' : buscarPor,
+        'nomeOuRazaoSocial' : nomeOuRazaoSocial.upper(),
+        'idFinalidade' : 1,
+    }
+
+    if nomeOuRazaoSocialExata:
+        params['nomeOuRazaoSocialExata'] = nomeOuRazaoSocialExata
+
+    if cepOuNomeRua:
+        params['cepOuNomeRua'] = cepOuNomeRua
+
+    if bairro:
+        params['bairro'] = bairro.upper()
+
+    if cidade:
+        params['cidade'] = cidade.upper()
+    
+    if uf:
+        params['uf'] = uf.upper()
+
+
+    response = requests.request("GET", url, headers=headers, data=payload, params=params)
+    if response.status_code != 200:
+        return response.json()
+
+    nameAddressData = nameAddressDataTreatment(response.json())
+
+    return nameAddressData
 
 # =============================
 # Consulta Pessoas Relacionadas
@@ -130,3 +230,31 @@ def vehicleDataRequest(placa) -> dict:
 
     response = requests.get(url, headers=headers, params=params)
     return response.json()
+
+# =================================
+# Histórico de Veículos
+# =================================
+
+def vehicle_history_request(document:str):
+    barear_token = _generate_token()
+
+    url = f"https://api.assertivasolucoes.com.br/veiculos/v3/historico-veiculos"
+
+    payload = {}
+    headers = {
+        'authorization': barear_token,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    params = {
+        'documento' : document,
+        'idFinalidade' : 2,
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload, params=params)
+    if response.status_code != 200:
+        return response.json()
+
+    vehicleHistoryData = vehicleHistoryDataTreatment(response.json())
+
+    return vehicleHistoryData

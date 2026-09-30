@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Security, status
 from fastapi.security.api_key import APIKeyHeader
-from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request, vehicleDataRequest
+from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request, vehicleDataRequest, email_request, phone_request, name_address_request, vehicle_history_request
 from api.sci2Api import requestInquiriesInfos
 from typing import Literal
 from datetime import datetime, date
@@ -74,10 +74,34 @@ def searchCompanyInfosAssertiva(document, apikey:str=Security(checkApiKey)):
     response = cnpj_request(document)
     return response
 
+@app.get('/api/consultaEmailAssertiva')
+def searchEmailInfosAssertiva(email, apikey:str=Security(checkApiKey)):
+    """Realiza a consulta de e-mail na base de dados do Assertiva."""
+    response = email_request(email)
+    return response
+
+@app.get('/api/consultaTelefoneAssertiva')
+def searchPhoneInfosAssertiva(telefone, apikey:str=Security(checkApiKey)):
+    """Realiza a consulta de telefone na base de dados do Assertiva."""
+    response = phone_request(telefone)
+    return response
+
+@app.get('/api/consultaEnderecoNome')
+def searchNameAddressInfosAssertiva(nomeOuRazaoSocial: str, buscarPor, cepOuNomeRua, bairro, cidade, uf, nomeOuRazaoSocialExata=False, apikey:str=Security(checkApiKey)):
+    """Realiza a consulta de nome e endereço na base de dados do Assertiva."""
+    response = name_address_request(nomeOuRazaoSocial, buscarPor, cepOuNomeRua, bairro, cidade, uf, nomeOuRazaoSocialExata)
+    return response
+
 @app.get('/api/consultaVeiculoAssertiva')
 def searchVehicleInfosAssertiva(vehiclePlate, apikey:str=Security(checkApiKey)):
     """Realiza a consulta de veículos e proprietário com base no emplacamento."""
     response = vehicleDataRequest(vehiclePlate)
+    return response
+
+@app.get('/api/propietarioVeiculo')
+def searchVehicleHistoryInfosAssertiva(document: str, apikey:str=Security(checkApiKey)):
+    """Realiza a consulta do histórico de veículos na base de dados do Assertiva."""
+    response = vehicle_history_request(document)
     return response
 
 
