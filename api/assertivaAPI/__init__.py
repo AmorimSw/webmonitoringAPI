@@ -1,6 +1,6 @@
 import requests
 from typing import Literal
-from .utils.dataTreatment import personDataTreatment, companyDataTreatment, emailDataTreatment, phoneDataTreatment, nameAddressDataTreatment, vehicleHistoryDataTreatment
+from .utils.dataTreatment import personDataTreatment, companyDataTreatment, emailDataTreatment, phoneDataTreatment, nameAddressDataTreatment, vehicleHistoryDataTreatment, extraDataTreatment, scoreDataTreatment
 
 def _generate_token():
 
@@ -33,8 +33,6 @@ def cpf_request(cpf:str):
     }
 
     response = requests.request("GET", url, headers=headers, data=payload)
-    if response.status_code != 200:
-        return response.json()
 
     personData = personDataTreatment(response.json())
 
@@ -148,8 +146,7 @@ def name_address_request(nomeOuRazaoSocial:str, buscarPor:Literal['ambas', 'pess
 
 
     response = requests.request("GET", url, headers=headers, data=payload, params=params)
-    if response.status_code != 200:
-        return response.json()
+    
 
     nameAddressData = nameAddressDataTreatment(response.json())
 
@@ -252,9 +249,61 @@ def vehicle_history_request(document:str):
     }
 
     response = requests.request("GET", url, headers=headers, data=payload, params=params)
-    if response.status_code != 200:
-        return response.json()
+    
 
     vehicleHistoryData = vehicleHistoryDataTreatment(response.json())
 
     return vehicleHistoryData
+
+# =================================
+# Consulta Dados Extras (Conexões)
+# =================================
+
+def extra_data_request(cpf:str, retornarMae:bool=True):
+    barear_token = _generate_token()
+
+    url = "https://api.assertivasolucoes.com.br/localize/v3/pessoas-de-referencia"
+
+    payload = {}
+    headers = {
+        'authorization': barear_token,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    params = {
+        'cpf': cpf,
+        'retornarMae': str(retornarMae).lower(),
+        'idFinalidade': 1,
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload, params=params)
+   
+
+    extraData = extraDataTreatment(response.json())
+
+    return extraData
+
+# =================================
+# Consulta Mix (Score)
+# =================================
+
+def score_request(cpf:str):
+    barear_token = _generate_token()
+
+    url = f"https://api.assertivasolucoes.com.br/mix-v3/pf/{cpf}"
+
+    payload = {}
+    headers = {
+        'authorization': barear_token,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    params = {
+        'idFinalidade': 2,
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload, params=params)    
+
+    scoreData = scoreDataTreatment(response.json())
+
+    return scoreData

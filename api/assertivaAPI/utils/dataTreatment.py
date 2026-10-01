@@ -128,3 +128,30 @@ def vehicleHistoryDataTreatment(rawData:dict) -> dict:
     finalData['historicoVeiculos'] = respData.get('historicoVeiculos', [])
 
     return finalData
+
+def extraDataTreatment(rawData:dict) -> dict:
+    '''Retorna um dicionário estruturado para o uso, a partir dos dados obtidos
+    em consulta via API do Assertiva por pessoas de referência.'''
+
+    respData:dict = rawData.get('resposta', '')
+    if not respData:
+        return {}
+    
+    finalData = dict()
+    finalData['pessoasDeReferencia'] = respData.get('pessoasDeReferencia', [])
+
+    return finalData
+
+def scoreDataTreatment(rawData:dict) -> dict:
+    '''Retorna um dicionário estruturado para o uso, a partir dos dados obtidos
+    em consulta via API do Assertiva pelo Mix-V3.'''
+
+    respData:dict = rawData.get('resposta', '')
+    if not respData:
+        return {}
+    
+    finalData = dict()
+    finalData['resumos'] = respData.get('resumos', {})
+    finalData['ocorrencias'] = respData.get('ocorrencias', {})
+
+    return finalData

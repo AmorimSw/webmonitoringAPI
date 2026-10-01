@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Security, status
 from fastapi.security.api_key import APIKeyHeader
-from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request, vehicleDataRequest, email_request, phone_request, name_address_request, vehicle_history_request
+from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request, vehicleDataRequest, email_request, phone_request, name_address_request, vehicle_history_request, extra_data_request, score_request
 from api.sci2Api import requestInquiriesInfos
 from typing import Literal
 from datetime import datetime, date
@@ -112,3 +112,15 @@ def requestInquiries(startDate:date, endDate:date, apikey:str=Security(checkApiK
 
     response = requestInquiriesInfos(startDate, endDate)
     return response
+
+@app.get('/api/dadosExtras/pessoas')
+def searchExtraDataAssertiva(cpf: str, retornarMae: bool = True, apikey:str=Security(checkApiKey)):
+    """Realiza a consulta de conexões na base de dados do Assertiva."""
+    response = extra_data_request(cpf, retornarMae)
+    return response
+
+@app.get('/api/score')
+def searchScoreAssertiva(cpf: str, apikey:str=Security(checkApiKey)):
+    """Realiza a consulta de Score (Mix-V3 PF) na base de dados do Assertiva."""
+    response = score_request(cpf)
+    return response
