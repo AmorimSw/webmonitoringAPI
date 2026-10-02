@@ -29,7 +29,13 @@ def _create_token() -> dict:
         headers=headers
     )
 
+    if not response.ok:
+        print(f"Erro ao criar token (status {response.status_code}): {response.text}")
+        response.raise_for_status()
+
     data = response.json()
+    if 'token' not in data:
+        raise KeyError(f"A chave 'token' não foi encontrada na resposta de autenticação: {data}")
     return data['token']
 
 def _get_pf_research_protocol(document, entity_type, bundles) -> str:
@@ -40,6 +46,9 @@ def _get_pf_research_protocol(document, entity_type, bundles) -> str:
     headers = {
     'Authorization' : 'Bearer ' + bearer_token       
     }
+    if isinstance(bundles, str):
+        bundles = [bundles]
+
     body = {
         'document' : document,
         'entity_type' : entity_type,
@@ -54,7 +63,11 @@ def _get_pf_research_protocol(document, entity_type, bundles) -> str:
     if response.status_code == 201 or response.status_code == 200:
         return response.json()['data']['id']
 
-    response.raise_for_status()
+    if not response.ok:
+        # Se a impressão no terminal não aparecer (por causa do buffer do FastAPI),
+        # nós anexamos o texto de erro na própria exceção HTTP.
+        response.reason = f"{response.reason} - Body: {response.text}"
+        response.raise_for_status()
 
 def get_pf_research_results(
         document:str,
@@ -74,18 +87,38 @@ def get_pf_research_results(
     
     research_id = _get_pf_research_protocol(document, entity_type, bundles)
 
-    sleep(10)
+    max_retries = 30 # Tenta por até 5 minutos (30 * 10s)
+    for _ in range(max_retries):
+        sleep(10)
 
-    bearer_token = _create_token()
-    headers = {
-        'Authorization' : 'Bearer ' + bearer_token
-    }
-    
-    response = requests.get(
-        f'https://api.brickseguros.com.br/v1/record/{research_id}',
-        headers=headers
-    )
-    if response.status_code == 201 or response.status_code == 200:
-        return response.json()
+        bearer_token = _create_token()
+        headers = {
+            'Authorization' : 'Bearer ' + bearer_token
+        }
+        
+        response = requests.get(
+            f'https://api.brickseguros.com.br/v1/record/{research_id}',
+            headers=headers
+        )
+        
+        if response.status_code in (200, 201):
+            data = response.json()
+            record_data = data.get('data', {})
+            
+            # De acordo com a documentação, o objeto record tem um campo "loading" (booleano)
+            # Se a resposta não trouxer o campo loading (ex: ainda inicializando) ou ele for True, continuamos esperando.
+            is_loading = record_data.get('loading', True)
+            
+            if is_loading:
+                continue
+            
+            # Quando loading for False, a pesquisa terminou
+            return data
 
-    response.raise_for_status()
+        # Adicionando tratamento para debugar o que está vindo no erro
+        if not response.ok:
+            error_msg = f"Erro na Brick API (status {response.status_code}): {response.text}"
+            print(error_msg)
+            response.raise_for_status()
+        
+    raise TimeoutError(f"A consulta na API Brick para o protocolo {research_id} demorou muito e excedeu o tempo máximo de espera.")
