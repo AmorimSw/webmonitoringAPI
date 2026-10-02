@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Security, status
 from fastapi.security.api_key import APIKeyHeader
 from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request, vehicleDataRequest, email_request, phone_request, name_address_request, vehicle_history_request, extra_data_request, score_request
+from api.brickAPI import get_pf_research_results
 from api.sci2Api import requestInquiriesInfos
-from typing import Literal
+from typing import Literal, List
 from datetime import datetime, date
 import dotenv, os
 
@@ -123,4 +124,31 @@ def searchExtraDataAssertiva(cpf: str, retornarMae: bool = True, apikey:str=Secu
 def searchScoreAssertiva(cpf: str, apikey:str=Security(checkApiKey)):
     """Realiza a consulta de Score (Mix-V3 PF) na base de dados do Assertiva."""
     response = score_request(cpf)
-    return response
+    return response
+
+'''
+Endpoints BRICK
+'''
+
+@app.get('/api/brick/consulta')
+def searchBrickData(
+        document:str,
+        entity_type:Literal['PF', 'PJ'],
+        bundles:
+            Literal[
+                    'ESSENTIAL', 'BOA_VISTA', 'SERASA', 'SPC', 'LIVENESS',
+                    'PUBLIC_JOBS', 'SOCIAL_ASSISTANCE', 'CLASS_ENTITIES', 'KYC',
+                ]=['ESSENTIAL'],
+        apikey:str=Security(checkApiKey)
+    ):
+    '''
+    Criação do protocolo de pesquisas do Brick.
+    - document - String - Documento CPF ou CNPJ;
+    - entity_type - String - _PF_ ou _PJ_, define se os levantamentos serão realizados sobre PF ou PJ;
+    - bundles - List[String] - Define quais serão os levantamentos realizados pela Brick. Por padrão, será feito apenas o _ESSENTIAL_.
+    Maiores detalhes sobre os _bundles_: https://docs.brickseguros.com.br/reference/record-1
+    '''
+
+    response = get_pf_research_results(document, entity_type, bundles)
+
+    return response
