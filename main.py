@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Security, status
 from fastapi.security.api_key import APIKeyHeader
 from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request, vehicleDataRequest, email_request, phone_request, name_address_request, vehicle_history_request, extra_data_request, score_request
+from api.brickAPI import get_pf_research_results
 from api.sci2Api import requestInquiriesInfos
 from typing import Literal
 from datetime import datetime, date
@@ -123,4 +124,14 @@ def searchExtraDataAssertiva(cpf: str, retornarMae: bool = True, apikey:str=Secu
 def searchScoreAssertiva(cpf: str, apikey:str=Security(checkApiKey)):
     """Realiza a consulta de Score (Mix-V3 PF) na base de dados do Assertiva."""
     response = score_request(cpf)
-    return response
+    return response
+
+# ||=========||
+# ||API BRICK||
+# ||=========||
+
+@app.get('/api/brick/busca_pf')
+def searchBrickPfResearch(cpf, apikey:str=Security(checkApiKey)):
+    """Realiza a consulta de informações na base de dados Brick"""
+    response = get_pf_research_results(cpf)
+    return response
