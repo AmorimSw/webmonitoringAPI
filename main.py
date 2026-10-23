@@ -3,6 +3,7 @@ from fastapi.security.api_key import APIKeyHeader
 from api import OpenSanctionsAPI, BacenSanctionsAPI, cpf_request, cnpj_request, vehicleDataRequest, email_request, phone_request, name_address_request, vehicle_history_request, extra_data_request, score_request
 from api.brickAPI import get_pf_research_results
 from api.sci2Api import requestInquiriesInfos
+from dataFilters.filterBrickInfos import filter_brick_pf_research
 from typing import Literal
 from datetime import datetime, date
 import dotenv, os
@@ -134,4 +135,6 @@ def searchScoreAssertiva(cpf: str, apikey:str=Security(checkApiKey)):
 def searchBrickPfResearch(cpf, apikey:str=Security(checkApiKey)):
     """Realiza a consulta de informações na base de dados Brick"""
     response = get_pf_research_results(cpf)
-    return response
+    filtred_response = filter_brick_pf_research(response)
+    return filtred_response
+    # return response
