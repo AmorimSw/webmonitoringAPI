@@ -58,3 +58,50 @@ def filter_brick_pf_research(brick_pf_research:dict):
     result['processosJuridicos'] = raw_processosJuridicos
 
     return result
+
+def filter_brick_pj_research(brick_pj_research:dict):
+    raw_participacoesSocietarias = None
+    raw_processosJuridicos = None
+    raw_contatos = None
+    result = dict()
+
+    for i, analysis in enumerate(brick_pj_research.get('data').get('analyses')):
+        match analysis['type']:
+                
+            case 'PJ_LAW_SUITS':
+                raw_processosJuridicos = json.loads(brick_pj_research['data']['analyses'][i]['content'])
+                
+            case 'PJ_PARTNERS_LAW_SUITS':
+                raw_processosJuridicosSocios = json.loads(brick_pj_research['data']['analyses'][i]['content'])
+                
+            case 'PJ_RELATIONS':
+                raw_participacoesSocietarias = json.loads(brick_pj_research['data']['analyses'][i]['content'])
+                
+            case 'PJ_ADDRESSES':
+                raw_contatos:List[dict] = json.loads(brick_pj_research['data']['analyses'][i]['content'])
+
+    # Filtro de dados de contato
+    enderecos = []
+    telefones = []
+    emails = []
+    for contato in raw_contatos:
+        if contato.get('phones'):
+            for telefone in contato.get('phones'):
+                telefones.append(telefone)
+
+        if contato.get('emails'):
+            for email in contato.get('emails'):
+                emails.append(email)
+        contato.pop('phones')
+        contato.pop('emails')
+
+        enderecos.append(contato)
+
+    result['enderecos'] = enderecos
+    result['telefones'] = telefones
+    result['emails'] = emails
+    result['participacoesSocietarias'] = raw_participacoesSocietarias
+    result['processosJuridicos'] = raw_processosJuridicos
+    result['sociosProcessosJuridicos'] = raw_processosJuridicosSocios
+
+    return result

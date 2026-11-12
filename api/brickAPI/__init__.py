@@ -62,3 +62,47 @@ def get_pf_research_results(cpf:str) -> dict:
         return response.json()
 
     response.raise_for_status()
+
+def _get_pj_research_protocol(cnpj:str) -> str:
+    bearer_token = __create_token()
+
+    cnpj = ''.join([c for c in cnpj if c.isnumeric()])
+
+    headers = {
+    'Authorization' : 'Bearer ' + bearer_token       
+    }
+    body = {
+        'document' : cnpj,
+        'entity_type' : 'PJ',
+        'bundles' : ['ESSENTIAL']
+    }
+
+    response = requests.post(
+        'https://api.brickseguros.com.br/v1/record',
+        headers=headers,
+        json=body
+    )
+    if response.status_code == 201 or response.status_code == 200:
+        return response.json()['data']['id']
+
+    response.raise_for_status()
+
+def get_pj_research_results(cnpj:str) -> dict:
+    research_id = _get_pj_research_protocol(cnpj)
+
+    sleep(10)
+
+    bearer_token = __create_token()
+    headers = {
+        'Authorization' : 'Bearer ' + bearer_token
+    }
+    
+    response = requests.get(
+        f'https://api.brickseguros.com.br/v1/record/{research_id}',
+        headers=headers
+    )
+    # if response.status_code == 201 or response.status_code == 200:
+    return response.json()
+
+    
+    # response.raise_for_status()
